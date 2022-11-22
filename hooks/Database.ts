@@ -1,12 +1,9 @@
 import { PrismaClient } from "../generated/client/deno/edge.ts";
-import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
-
-const env = config();
 
 export const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: Deno.env.get("DATABASE_URL") ?? env.DATABASE_URL,
+      url: Deno.env.get("DATABASE_URL"),
     },
   },
 });
