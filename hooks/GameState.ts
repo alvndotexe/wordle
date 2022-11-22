@@ -1,74 +1,78 @@
-import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
+import { batch, computed, signal, Signal } from "@preact/signals";
+import { boolean } from "https://deno.land/x/zod@v3.19.1/types.ts";
 import { StoredGameData } from "../islands/Wordle.tsx";
 
-//TODO db autodeletes old unused games
-
-export type GameOptions = {
-  clientID: string;
-  solution: string;
-  gameID: string;
-  words: string[];
-};
-
-export type Leader = {
+export type Player = {
   clientID: string;
   attempts: string[];
 };
 
-export class GameState {
-  leader: Signal<Leader>;
-  #gameOptions: Signal<GameOptions>;
-  attempts: Signal<Array<string>>;
-  #input: Signal<string>;
-  previousLeaders: Signal<Array<string>>;
-  hasWon: Signal<undefined | boolean>;
+export type GameOptions = {
+  attempts: string[];
+  clientID: string;
+  words: string[];
+  solution: string;
+};
 
-  constructor(gameOptions: Signal<GameOptions>) {
-    this.#gameOptions = gameOptions;
-    this.attempts = signal(new Array<string>());
-    this.#input = signal("");
-    this.leader = signal({
-      clientID: "",
-      attempts: [],
-    });
-    this.previousLeaders = signal(new Array<string>());
-    this.hasWon = signal(undefined);
-  }
-  currentInput = computed(() => this.#input.value);
-  currentAttempt = computed(() => this.attempts.value.length);
-  solution = computed(() => this.#gameOptions.value.solution);
-  isComplete = computed(() => {
-    const hasSolution = this.attempts.value.includes(
-      this.#gameOptions.value.solution
-    );
-    const isOutOfAttempts = this.attempts.value.length === 6;
-    return hasSolution || isOutOfAttempts;
-  });
+export type GameState = {
+  gameOptions: Signal<GameOptions>;
+  input: Signal<string>;
+  otherPlayers: Signal<Player[]>;
+  isLoading: Signal<boolean>;
+};
 
-  addLeader(leader: Leader) {
-    if (this.previousLeaders.value.includes(leader.clientID)) {
-      this.previousLeaders.value = [
-        ...this.previousLeaders.value,
-        leader.clientID,
-      ];
-    }
-  }
-
-  loadPreviousAttempts(prevData: StoredGameData) {
-    this.attempts.value = prevData.attempts;
-  }
-
-  addAttempt(attempt: string) {
-    if (this.#gameOptions.value.words.includes(attempt)) {
-      this.attempts.value = [...this.attempts.value, attempt];
-      this.#input.value = "";
+export function useGameStore(initialStoreState: () => StoredGameData) {
+  const storedData = initialStoreState();
+  const storeState: GameState = {
+    gameOptions: signal({
+      attempts: storedData.attempts,
+      clientID: storedData.clientID,
+      solution: "",
+      words: new Array<string>(),
+    }),
+    input: signal(""),
+    otherPlayers: signal(new Array<Player>()),
+    isLoading: signal(true),
+  };
+  function addAttempt(attempt: string) {
+    if (
+      attempt.length == 5 &&
+      storeState.gameOptions.value.attempts.length < 6 &&
+      storeState.gameOptions.value.words.includes(attempt)
+    ) {
+      storeState.gameOptions.value = {
+        ...storeState.gameOptions.value,
+        attempts: [...storeState.gameOptions.value.attempts, attempt],
+      };
+      storeState.input.value = "";
       return true;
     }
     return false;
   }
 
-  onKeyPress(key: string) {
-    //TODO make simpler
+  function forceGameFinish() {
+    const leftovers = new Array(
+      6 - storeState.gameOptions.value.attempts.length
+    ).fill("");
+    storeState.gameOptions.value = {
+      ...storeState.gameOptions.value,
+      attempts: storeState.gameOptions.value.attempts.concat(leftovers),
+    };
+  }
+
+  function updateOpponents(otherPlayers: Player[]) {
+    storeState.otherPlayers.value = otherPlayers;
+  }
+
+  function removeCharFromInput() {
+    if (storeState.input.value.length > 0) {
+      storeState.input.value = storeState.input.value.slice(0, -1);
+      return true;
+    }
+    return false;
+  }
+
+  function addCharToInput(key: string) {
     const charCode = key.charCodeAt(0);
     const char =
       charCode < 65
@@ -80,32 +84,63 @@ export class GameState {
         : charCode > 122
         ? null
         : key;
-    if (char && (this.#input.value + char).length <= 5) {
-      this.#input.value += char;
+    if (char && (storeState.input.value + char).length <= 5) {
+      storeState.input.value += char;
+      return true;
     }
+    return false;
   }
 
-  onBackspaceKeyPress() {
-    this.#input.value = this.#input.value.slice(0, -1);
+  function forceReset(payload: Partial<GameOptions & { opponents: Player[] }>) {
+    const { opponents, ...rest } = payload;
+    batch(() => {
+      if (opponents) storeState.otherPlayers.value = opponents;
+      storeState.gameOptions.value = {
+        ...storeState.gameOptions.value,
+        ...rest,
+      };
+      storeState.isLoading.value = false;
+    });
   }
 
-  onEnterKeyPress({
-    onSuccess,
-    onFailure,
-  }: {
-    onSuccess: () => void;
-    onFailure: () => void;
-  }) {
-    if (
-      this.#input.value.length === 5 &&
-      this.attempts.value.length < 6 &&
-      this.addAttempt(this.#input.value)
-    ) {
-      onSuccess();
-    } else onFailure();
-  }
-  forceGameFinish() {
-    const leftovers = new Array(6 - this.attempts.value.length).fill("");
-    this.attempts.value = this.attempts.value.concat(leftovers);
-  }
+  return {
+    game: computed(() => storeState.gameOptions.value),
+    opponents: computed(() => storeState.otherPlayers.value),
+    currentInput: computed(() => storeState.input.value),
+    attempts: computed(() => storeState.gameOptions.value.attempts.length),
+    solution: computed(() => storeState.gameOptions.value.solution),
+    isLoading: computed(() => storeState.isLoading.value),
+    isComplete: computed(() => {
+      return (
+        storeState.gameOptions.value.attempts.length === 6 ||
+        storeState.otherPlayers.value
+          .flatMap((p) => p.attempts)
+          .includes(storeState.gameOptions.value.solution)
+      );
+    }),
+    removeCharFromInput,
+    addAttempt,
+    addCharToInput,
+    forceGameFinish,
+    forceReset,
+    updateOpponents,
+  };
+}
+
+export function useInputHandlers(state: ReturnType<typeof useGameStore>) {
+  const { addAttempt, currentInput, removeCharFromInput, addCharToInput } =
+    state;
+  return {
+    onEnterKeyPress(onSuccess: () => void, onFailure: () => void) {
+      if (addAttempt(currentInput.value)) onSuccess();
+      else onFailure();
+    },
+    onKeyPress(key: string, onFailure: () => void) {
+      if (!addCharToInput(key)) onFailure();
+    },
+    //updateinput,onfail do something
+    onBackspaceKeyPress(onFailure: () => void) {
+      if (!removeCharFromInput()) onFailure();
+    },
+  };
 }

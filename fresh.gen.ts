@@ -8,9 +8,8 @@ import * as $1 from "./routes/_404.tsx";
 import * as $2 from "./routes/_500.tsx";
 import * as $3 from "./routes/index.tsx";
 import * as $4 from "./routes/socket/[socket].tsx";
-import * as $$0 from "./islands/Modal.tsx";
-import * as $$1 from "./islands/Opponent.tsx";
-import * as $$2 from "./islands/Wordle.tsx";
+import * as $$0 from "./islands/Share.tsx";
+import * as $$1 from "./islands/Wordle.tsx";
 
 const manifest = {
   routes: {
@@ -21,9 +20,8 @@ const manifest = {
     "./routes/socket/[socket].tsx": $4,
   },
   islands: {
-    "./islands/Modal.tsx": $$0,
-    "./islands/Opponent.tsx": $$1,
-    "./islands/Wordle.tsx": $$2,
+    "./islands/Share.tsx": $$0,
+    "./islands/Wordle.tsx": $$1,
   },
   baseUrl: import.meta.url,
   config,

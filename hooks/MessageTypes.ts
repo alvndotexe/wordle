@@ -1,16 +1,14 @@
 import { Signal } from "@preact/signals";
-import { Leader } from "./GameState.ts";
-import { Player } from "./Players.ts";
+import { Player } from "./GameState.ts";
 
 export type ExtractSignal<T> = T extends Signal<infer U> ? U : never;
 export type MessageType =
-  | "gameOptions"
   | "attempt"
   | "complete"
-  | "verifyClient"
-  | "newLeader"
-  | "existingPlayer"
-  | "newPlayer"
+  | "updatedLeaders"
+  | "clientConnectionRequest"
+  | "clientConnectionResponse"
+  | "newGameRequest"
   | "finished";
 
 export type FilterUnion<U, S extends string> = U extends { messageType: S }
@@ -18,40 +16,25 @@ export type FilterUnion<U, S extends string> = U extends { messageType: S }
   : never;
 
 export type Messages =
-  | gameOptionsMessage
   | AttemptMessage
   | completeMessage
-  | VerifyClientMessage
-  | NewLeaderMessage
-  | ExistingPlayerMessage
-  | NewPlayerMessage
+  | ConnectClientRequest
+  | ConnectClientResponse
+  | UpdateLeadersMessage
   | FinishedMessage;
 
-export type ExistingPlayerMessage = {
-  messageType: "existingPlayer";
-  clientID: string;
-  attempts: string[];
-  gameID: string;
-};
-
-export type NewPlayerMessage = {
-  messageType: "newPlayer";
-};
-
-export type VerifyClientMessage = {
-  messageType: "verifyClient";
+export type ConnectClientRequest = {
+  messageType: "clientConnectionRequest";
   clientID: string;
 };
 
-export type NewLeaderMessage = {
-  leader: Leader | undefined;
-  messageType: "newLeader";
+export type NewGameRequest = {
+  messageType: "newGameRequest";
 };
 
-export type gameOptionsMessage = {
-  messageType: "gameOptions";
-  playerType: "existing" | "new";
-  leader: Leader | undefined;
+export type ConnectClientResponse = {
+  messageType: "clientConnectionResponse";
+  opponents: Player[];
   solution: string;
   words: string[];
   clientID: string;
@@ -64,6 +47,11 @@ export type AttemptMessage = {
   clientID: string;
 };
 
+export type UpdateLeadersMessage = {
+  messageType: "updatedLeaders";
+  opponents: Player[];
+};
+
 export type completeMessage = {
   messageType: "complete";
   clientID: string;
@@ -72,5 +60,5 @@ export type completeMessage = {
 
 export type FinishedMessage = {
   messageType: "finished";
-  winner: Leader | undefined;
+  winner: Player | null;
 };

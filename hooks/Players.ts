@@ -20,13 +20,14 @@ export class Player {
 
   sendMessage<M extends MessageType>(
     messageType: M,
-    message: FilterUnion<Messages, M>
+    message: Omit<FilterUnion<Messages, M>, "messageType">
   ) {
-    if (this.socket.readyState === 1) this.socket.send(JSON.stringify(message));
+    if (this.socket.readyState === 1)
+      this.socket.send(JSON.stringify({ messageType, ...message }));
   }
 
   bestAttempt(solution: string) {
-    if (this.attempts.value.length === 0) return undefined;
+    if (this.attempts.value.length === 0) return 0;
     return this.attempts.value.reduce((acc, currentAttempt) => {
       const currentAttemptCount = currentAttempt
         .split("")

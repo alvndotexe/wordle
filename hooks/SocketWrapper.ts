@@ -10,6 +10,7 @@ export class SocketWrapper {
   constructor(socket: WebSocket) {
     this.#socket = socket;
     this.#actions = new Map();
+    this.#startListening();
   }
   on = <Mtype extends MessageType>(
     action: Mtype,
@@ -35,13 +36,20 @@ export class SocketWrapper {
     };
     return this;
   };
-  send = (messageBody: Messages) => {
+  send = <M extends MessageType>(
+    messageType: M,
+    messageBody: Omit<FilterUnion<Messages, M>, "messageType">
+  ) => {
     if (this.#socket.readyState === 1) {
-      this.#socket.send(JSON.stringify(messageBody));
+      this.#socket.send(JSON.stringify({ ...messageBody, messageType }));
     }
+    return this;
+  };
+  close = () => {
+    this.#socket.close;
   };
   //TODO onError
-  build = () => {
+  #startListening() {
     this.#socket.addEventListener("message", (e) => {
       const message = JSON.parse(e.data) as unknown as Messages;
       const messageType = message.messageType;
@@ -54,6 +62,5 @@ export class SocketWrapper {
       fn(message, this);
     });
     this.#socket.onerror = () => this.#socket.close;
-    return this.#socket;
-  };
+  }
 }
