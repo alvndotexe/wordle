@@ -34,7 +34,8 @@ export default function Modal({
     else dialogRef.current?.close();
   }, [show]);
   return (
-    <dialog class="flex flex-col" ref={dialogRef}>
+    <dialog class="flex flex-col rounded-sm" ref={dialogRef}>
+      <p class="border border-black rounded-sm">{solution}</p>
       <button
         class="bg-green-400 rounded-sm p-2"
         onClick={() => (location.href = "/")}
