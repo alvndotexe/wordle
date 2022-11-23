@@ -20,12 +20,14 @@ const getInitialState = (): StoredGameData => {
     clientID: z.string(),
     attempts: z.array(z.string()),
   });
-  const emtyData = {
+  const emtyData: StoredGameData = {
     clientID: "",
     attempts: new Array<string>(),
   };
   try {
-    const storedData = localStorage.getItem(gameID);
+    const storedData = IS_BROWSER
+      ? localStorage.getItem(gameID)
+      : JSON.stringify(emtyData);
     return storedData ? storedState.parse(JSON.parse(storedData)) : emtyData;
   } catch (e) {
     if (e instanceof ZodError) return emtyData;
