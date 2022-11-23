@@ -12,8 +12,8 @@ const gameID = IS_BROWSER
   : "";
 const pain = IS_BROWSER ? new URL(location.href) : undefined;
 const url = IS_BROWSER
-  ? `ws://${pain?.host}/socket${pain?.pathname}`
-  : `ws://127.0.0.1:8000/socket${gameID}`;
+  ? `wss://${pain?.host}/socket${pain?.pathname}`
+  : `wss://127.0.0.1:8000/socket${gameID}`;
 
 const getInitialState = (): StoredGameData => {
   const storedState = z.object({
