@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "preact/compat";
-import { Player, useGameStore } from "../hooks/GameState.ts";
+import { Player } from "../hooks/GameState.ts";
 import { SocketWrapper } from "../hooks/SocketWrapper.ts";
 import Opponent from "./Opponent.tsx";
 
@@ -20,7 +20,6 @@ function OtherPlayers({
 
 export default function Modal({
   show,
-  opponents,
   solution,
 }: {
   show: boolean;
