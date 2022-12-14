@@ -17,7 +17,7 @@ export default function Error500Page({ url }: ErrorPageProps) {
               {[5, 0, 0].map((e) => (
                 <section
                   style={{ aspectRatio: "1/1" }}
-                  className="grid place-items-center font-bold text-8xl text-white bg-red-700 text-center rounded-lg"
+                  className="grid place-items-center font-bold text-8xl text-white bg-red-500 text-center rounded-lg"
                 >
                   <p class="max-w-min">{e}</p>
                 </section>
@@ -27,10 +27,15 @@ export default function Error500Page({ url }: ErrorPageProps) {
               oops something went wrong
             </p>
             <div class="flex gap-2">
-              <a class="bg-yellow-500 rounded-md p-2 ">Refresh</a>
+              <a
+                href={`${url.pathname}`}
+                class="bg-yellow-500 rounded-md p-2 px-1 text-white text-xl "
+              >
+                Refresh
+              </a>
               <a
                 href="/"
-                class="rounded-md bg-green-400 px-1 text-white text-xl px-2 py-2"
+                class="rounded-md bg-green-400 px-1 text-white text-xl p-2"
               >
                 New Game
               </a>

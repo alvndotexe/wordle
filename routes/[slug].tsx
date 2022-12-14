@@ -1,5 +1,6 @@
 import { Head } from "https://deno.land/x/fresh@1.1.2/runtime.ts";
 import { HandlerContext } from "https://deno.land/x/fresh@1.1.2/server.ts";
+import { useEffect } from "preact/compat";
 import { findGame } from "../hooks/Database.ts";
 import Share from "../islands/Share.tsx";
 
