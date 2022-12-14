@@ -1,7 +1,8 @@
 import { PrismaClient } from "../generated/client/deno/edge.ts";
 import { config } from "https://deno.land/std@0.167.0/dotenv/mod.ts";
 
-const url = await config().then((c) => c["DATA_PROXY_URL"]);
+const url = await config().then((c) => c["DATABASE_URL"]);
+console.log(await config());
 
 export const prisma = new PrismaClient({
   datasources: {
@@ -12,14 +13,14 @@ export const prisma = new PrismaClient({
 });
 
 export function findSoloution(game_id: string) {
-  return prisma.games.findUnique({
+  return prisma.game.findUnique({
     select: { solution: true },
     where: { game_id },
   });
 }
 
 export function findPlayer(player_id: string, game_id: string) {
-  return prisma.players.findMany({
+  return prisma.game_Players.findMany({
     select: {
       game_id: true,
     },
@@ -31,7 +32,7 @@ export function findPlayer(player_id: string, game_id: string) {
 }
 
 export function addPlayer(player_id: string, game_id: string) {
-  return prisma.players.create({
+  return prisma.game_Players.create({
     data: {
       player_id,
       game_id,
@@ -39,7 +40,7 @@ export function addPlayer(player_id: string, game_id: string) {
   });
 }
 export function findGame(game_id: string) {
-  return prisma.games.findUnique({
+  return prisma.game.findUnique({
     select: { game_id: true, solution: true },
     where: {
       game_id: game_id,
@@ -48,7 +49,7 @@ export function findGame(game_id: string) {
 }
 
 export function newGame(solution: string) {
-  return prisma.games.create({
+  return prisma.game.create({
     data: {
       game_id: crypto.randomUUID(),
       solution: solution,
@@ -57,7 +58,7 @@ export function newGame(solution: string) {
 }
 
 export function deleteGame(game_id: string) {
-  return prisma.games.delete({
+  return prisma.game.delete({
     where: { game_id },
   });
 }

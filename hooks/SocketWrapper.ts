@@ -52,6 +52,7 @@ export class SocketWrapper {
   #startListening() {
     this.#socket.addEventListener("message", (e) => {
       const message = JSON.parse(e.data) as unknown as Messages;
+      if (IS_BROWSER) console.log(message);
       const messageType = message.messageType;
       if (!messageType || !this.#actions.has(messageType)) {
         throw new Error(
