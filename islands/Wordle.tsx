@@ -12,8 +12,8 @@ const gameID = IS_BROWSER
   : "";
 const pain = IS_BROWSER ? new URL(location.href) : undefined;
 const url = IS_BROWSER
-  ? `wss://${pain?.host}/socket${pain?.pathname}`
-  : `wss://127.0.0.1:8000/socket${gameID}`;
+  ? `ws://${pain?.host}/socket${pain?.pathname}`
+  : `ws://127.0.0.1:8000/socket${gameID}`;
 
 const getInitialState = (): StoredGameData => {
   const storedState = z.object({
@@ -111,11 +111,11 @@ function handleInput(key: string) {
 export function getColour(condition: () => PossibleColours) {
   const value = condition();
   return value === null
-    ? "bg-gray-300"
+    ? "bg-gray-300 dark:bg-gray-700 "
     : value === true
     ? "bg-green-400"
     : value === false
-    ? "bg-black"
+    ? "bg-black dark:border-[1px] dark:border-white"
     : "bg-yellow-400";
 }
 
@@ -132,7 +132,7 @@ export function LetterBox({
     state.attempts.value - 1 < index ? "text-black" : "text-white";
   return (
     <div
-      class={`grid place-items-center w-14 h-16 ${textColour} font-bold rounded-[3px] ${
+      class={`grid place-items-center w-14 h-16 dark:text-white dark:text-white ${textColour} font-bold rounded-[3px] ${
         condition ? getColour(condition) : "bg-gray-300"
       }`}
     >
@@ -219,11 +219,12 @@ function KeyboardLetter({ letter }: { letter: string }) {
       data-letter={letter}
       //@ts-ignore : event.target
       onClick={(e: Event) => handleInput(e.target.getAttribute("data-letter"))}
-      class={`flex-grow-1 h-14 grid place-items-center ${
-        bgColour === "bg-black" ? "text-white" : "text-black"
-      } rounded-[3px] font-bold ${getColour(() =>
-        KeyboardKeyCondition(letter)
-      )}`}
+      class={`flex-grow-1 h-14 items-center 
+       rounded-[3px] font-bold ${
+         bgColour.includes("black")
+           ? "text-white"
+           : "text-black dark:text-white"
+       } ${bgColour}`}
     >
       {letter}
     </button>
@@ -246,7 +247,7 @@ function Keyboard() {
       <div class="flex gap-2 justify-center">
         <button
           onClick={(e) => handleInput("Enter")}
-          class="bg-gray-300 rounded-[3px] grid place-items-center px-2 font-bold text-black"
+          class="bg-gray-300 rounded-[3px] grid place-items-center px-2 font-bold text-black dark:text-white dark:bg-gray-700"
         >
           Enter
         </button>
@@ -259,7 +260,7 @@ function Keyboard() {
               //TODO onFailure
             });
           }}
-          class="bg-gray-300 rounded-[3px] grid place-items-center px-2 font-bold text-black"
+          class="bg-gray-300 rounded-[3px] grid place-items-center px-2 font-bold text-black dark:text-white dark:bg-gray-700"
         >
           Clear
         </button>
@@ -308,7 +309,7 @@ export default function GameBoard() {
             />
           )}
         {state.isLoading.value ? (
-          "loading"
+          <p class="text-black dark:text-white">loading</p>
         ) : (
           <div class=" flex-grow-0 flex-shrink-0 grid grid-cols-5 grid-rows-6 gap-2 w-[20rem] h-[max-content] w-[max-content]">
             <Row rowIndex={0} />

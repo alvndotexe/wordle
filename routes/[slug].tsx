@@ -18,9 +18,9 @@ export default function Game() {
         <title>Wordle</title>
         <link rel="stylesheet" href="/styles.css" />
       </Head>
-      <body className="h-[100vh] w-full flex flex-col">
-        <nav class="flex justify-between bg-gray-300 w-full flex-grow-0 border-b-1 border-gray-400">
-          <p>hello worlde</p>
+      <body className="h-[100vh] w-full flex flex-col dark:bg-black">
+        <nav class="flex justify-between bg-gray-300 dark:bg-gray-700 w-full flex-grow-0 border-b-1 border-gray-400 dark:border-gray-900 px-2 py-1">
+          <p class="dark:text-white font-bold text-xl">hello worlde</p>
           <Share />
         </nav>
         <main class="flex-grow-1 grid place-items-center">
