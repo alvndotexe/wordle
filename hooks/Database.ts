@@ -47,13 +47,18 @@ export function findGame(game_id: string) {
   });
 }
 
-export function newGame(solution: string) {
-  return prisma.game.create({
-    data: {
-      game_id: crypto.randomUUID(),
-      solution: solution,
-    },
-  });
+export function newGame() {
+  //TODO make this call a function so it
+  return prisma.$queryRaw`select word_id from "Word" order by random() limit 1`.then(
+    (result) => {
+      return prisma.game.create({
+        data: {
+          game_id: crypto.randomUUID(),
+          solution: result[0].word_id as unknown as string,
+        },
+      });
+    }
+  );
 }
 
 export function deleteGame(game_id: string) {
