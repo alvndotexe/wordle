@@ -19,6 +19,10 @@ model Game {
   Game_Players Game_Players[]
 }
 
+model Word {
+  word_id String @id @db.VarChar
+}
+
 model Game_Players {
   game_id   String @db.VarChar
   player_id String @db.VarChar
