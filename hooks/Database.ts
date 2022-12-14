@@ -3,15 +3,6 @@ import { config } from "https://deno.land/std@0.167.0/dotenv/mod.ts";
 
 const url = await config().then((c) => c["DATA_PROXY_URL"]);
 
-console.log({
-  url,
-  config: await config(),
-  env: {
-    proxy: Deno.env.get("DATA_PROXY_URL"),
-    url: Deno.env.get("DATABASE_URL"),
-  },
-});
-
 export const prisma = new PrismaClient({
   datasources: {
     db: {
